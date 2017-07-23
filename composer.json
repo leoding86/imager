@@ -1,0 +1,21 @@
+{
+    "name": "leoding86/imager",
+    "description": "A simple lib for working with image",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Leo Ding",
+            "email": "leoding86@msn.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Leoding86\\Imager\\": "src/"
+        }
+    }
+}
