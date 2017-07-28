@@ -23,11 +23,11 @@ $pic->crop(300, 300); // Crop image
 $bg->write($text_shadow, 200, 200); // Write text on image as text shadow
 $bg->write($text, 198, 198);  // Write text on image
 
-$text->setText($text_str . ' bbox align right')->getTextBoundingBox(); // Set new text string and re-calculate text bounding box size
-$bg->write($text, 198, 230, Imager\Image::BBOX_ALIGN_RIGHT); // Write text on image with right align
+$text->setText($text_str . ' bbox align right')->calculateTextBoxSize(); // Set new text string and re-calculate text bounding box size
+$bg->write($text, 198, 230, Imager\Image::TEXT_BOX_ALIGN_RIGHT); // Write text on image with right align
 
-$text->setColor($black)->setText($text_str . ' bbox align center')->getTextBoundingBox();
-$bg->write($text, 198, 260, Imager\Image::BBOX_ALIGN_CENTER);
+$text->setColor($black)->setText($text_str . ' bbox align center')->calculateTextBoxSize();
+$bg->write($text, 198, 260, Imager\Image::TEXT_BOX_ALIGN_CENTER);
 
 $bg->append($pic, 200, 300); // Add a image
 
