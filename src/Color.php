@@ -5,6 +5,15 @@ namespace Leoding86\Imager;
 use OutOfBoundsException;
 use RuntimeException;
 
+/**
+ * This class is for creating a color for fill image or color text
+ * 
+ * @property mixed $red
+ * @property mixed $green
+ * @property mixed $blue
+ * @property mixed $alpha
+ * @author Leo Ding <leoding86@msn.com>
+ */
 class Color
 {
   private $red;
@@ -12,6 +21,14 @@ class Color
   private $blue;
   private $alpha;
 
+  /**
+   * Constrcut a color object, support hex or rgb or rgba
+   *
+   * @param mixed $red   red channel or hex
+   * @param mixed $green green channel
+   * @param mixed $blue  blue channel
+   * @param mixed $alpha alpha
+   */
   public function __construct($red, $green = null, $blue = null, $alpha = null)
   {
     if (
@@ -34,7 +51,7 @@ class Color
       !$this->verifyChannel($blue) ||
       !$this->verifyAlpha($alpha)
     ) {
-      throw new OutOfBoundsExp('Unsupport color value');
+      throw new OutOfBoundsException('Unsupport color value');
     }
 
     $this->red = $red;
@@ -43,15 +60,27 @@ class Color
     $this->alpha = floor(127 * $alpha / 255);
   }
 
+  /**
+   * Get property
+   *
+   * @param  string $name
+   * @return mixed
+   */
   public function __get($name)
   {
     if (property_exists($this, $name)) {
       return $this->$name;
     } else {
-      throw new RuntimeException('Unkown property {Color::' . $name . '}');
+      trigger_error('Unkown property {Color::' . $name . '}', E_USER_ERROR);
     }
   }
 
+  /**
+   * Allocate color for a image
+   *
+   * @param  Image $image
+   * @return int
+   */
   public function colorAllocate(Image $image)
   {
     if ($this->alpha !== null) {
@@ -61,6 +90,13 @@ class Color
     }
   }
 
+  /**
+   * Fill current color to a image
+   * after fill image, de-allocate color
+   *
+   * @param  Image $image
+   * @return void
+   */
   public function fillImage(Image $image)
   {
     $allocatecolor = $this->colorAllocate($image);
@@ -68,11 +104,23 @@ class Color
     imagecolordeallocate($image->getRes(), $allocatecolor);
   }
 
+  /**
+   * rgb channel checker
+   *
+   * @param  mixed $channel channel value
+   * @return void
+   */
   private function verifyChannel($channel)
   {
     return $channel >=0 && $channel <= 255;
   }
 
+  /**
+   * alpha value checker
+   *
+   * @param  mixed $alpha alpha value
+   * @return void
+   */
   private function verifyAlpha($alpha)
   {
     return $alpha === null || ($alpha >= 0 && $alpha <= 255);
