@@ -9,16 +9,18 @@ class Image
   const CROP_FIT_WIDTH = 1;
   const CROP_FIT_HEIGHT = 2;
   const CROP_FIT_AUTO = 3;
-  const BBOX_ALIGN_LEFT = 1;
-  const BBOX_ALIGN_RIGHT = 2;
-  const BBOX_ALIGN_CENTER = 3;
+  const TEXT_BOX_ALIGN_LEFT = 1;
+  const TEXT_BOX_ALIGN_RIGHT = 2;
+  const TEXT_BOX_ALIGN_CENTER = 3;
   private $im;
   private $width;
   private $height;
   private $betterCrop;
 
   /**
-   * 初始化载入创建图片资源
+   * Construct a image object
+   * 
+   * You can create a image using file or size and you can append text or other image to it.
    *
    * @param mixed      $input
    * @param int|null   $height
@@ -54,10 +56,17 @@ class Image
     }
   }
 
+  /**
+   * This method is used for replace old image resource with new resource after crop, scale, border, resize image.
+   *
+   * @param  Image $image New image resource
+   * @return void
+   */
   private function replaceInstance(Image $image)
   {
-    imagedestroy($this->im);
+    imagedestroy($this->im); // Destroy old image
 
+    /* Replace old properties with new properties */
     foreach ($this as $prop => $val) {
       $this->$prop = $image->$prop;
     }
@@ -65,30 +74,52 @@ class Image
     return $this;
   }
 
+  /**
+   * Get current PHP image resource
+   *
+   * @return int PHP image resource
+   */
   public function getRes()
   {
     return $this->im;
   }
 
-  public function destroy()
-  {
-    imagedestroy($this->im);
-    unset($this);
-  }
-
+  /**
+   * Setter of propery betterCrop
+   * 
+   * True -> imagecopyresampled; False -> imagecopyresized
+   *
+   * @param  boolean $bool
+   * @return void
+   */
   public function setBetterCrop($bool)
   {
     $this->betterCrop = $bool;
     return $this;
   }
 
-  public function fillColor(Color $color, $x = 0, $y = 0)
+  /**
+   * Fill color with specify color, if no color is specified, use white to fill it
+   *
+   * @param  Color $color
+   * @return void
+   */
+  public function fillColor(Color $color = null)
   {
     $color = $color === null ? new Color(255, 255, 255) : $color;
     $color->fillImage($this);
     return $this;
   }
 
+  /**
+   * Crop image to specified size
+   *
+   * @param int   $width
+   * @param int   $height
+   * @param int   $crop_type
+   * @param Color $bg_color  Fill color to left space
+   * @return void
+   */
   public function crop($width, $height, $crop_type = self::CROP_FIT_AUTO, Color $bg_color = null)
   {
     $dst_image = new Image($width, $height);
@@ -166,6 +197,12 @@ class Image
     return $this->replaceInstance($dst_image);
   }
 
+  /**
+   * Scale image with
+   *
+   * @param  mixed $scale
+   * @return Image
+   */
   public function scale($scale)
   {
     $width = floor($this->width * $scale);
@@ -183,6 +220,16 @@ class Image
     return $this->replaceInstance($dst_image);
   }
 
+  /**
+   * Add border to current image with specified size and color
+   *
+   * @param integer $left
+   * @param integer $top
+   * @param integer $right
+   * @param integer $bottom
+   * @param Color $color
+   * @return void
+   */
   public function border($left, $top, $right, $bottom, Color $color = null)
   {
     $dst_image = new Image($this->width + $left + $right, $this->height + $top + $bottom);
@@ -191,6 +238,18 @@ class Image
     return $this->replaceInstance($dst_image);
   }
 
+  /**
+   * Append image to current image
+   *
+   * @param Image $src_image
+   * @param integer $dst_x
+   * @param integer $dst_y
+   * @param integer $src_x
+   * @param integer $src_y
+   * @param integer $src_w
+   * @param integer $src_h
+   * @return Image
+   */
   public function append(Image $src_image, $dst_x = 0, $dst_y = 0, $src_x = 0, $src_y = 0, $src_w = null, $src_h = null)
   {
     $src_w = $src_w === null ? $src_image->width : $src_w;
@@ -200,6 +259,18 @@ class Image
     return $this;
   }
 
+  /**
+   * Append image to other image
+   *
+   * @param Image $dst_image
+   * @param integer $dst_x
+   * @param integer $dst_y
+   * @param integer $src_x
+   * @param integer $src_y
+   * @param integer $src_w
+   * @param integer $src_h
+   * @return Image
+   */
   public function appendTo(Image $dst_image, $dst_x = 0, $dst_y = 0, $src_x = 0, $src_y = 0, $src_w = null, $src_h = null)
   {
     $src_w = $src_w === null ? $this->width : $src_w;
@@ -209,13 +280,22 @@ class Image
     return $this;
   }
 
-  public function write(Text $text, $x, $y, $align = self::BBOX_ALIGN_LEFT)
+  /**
+   * Write text on image
+   *
+   * @param Text $text
+   * @param int  $x
+   * @param int  $y
+   * @param int  $align
+   * @return Image
+   */
+  public function write(Text $text, $x, $y, $align = self::TEXT_BOX_ALIGN_LEFT)
   {
     $colorallocate = $text->color->colorAllocate($this);
 
-    if ($align === self::BBOX_ALIGN_CENTER) {
+    if ($align === self::TEXT_BOX_ALIGN_CENTER) {
       $x = $x - round($text->box['width'] / 2);
-    } else if ($align === self::BBOX_ALIGN_RIGHT) {
+    } else if ($align === self::TEXT_BOX_ALIGN_RIGHT) {
       $x = $x - round($text->box['width']);
     }
 
@@ -223,6 +303,11 @@ class Image
     return $this;
   }
 
+  /**
+   * Display as jpg image
+   *
+   * @return void
+   */
   public function display()
   {
     header('Content-Type: image/jpeg');
@@ -230,6 +315,12 @@ class Image
     imagedestroy($this->im);
   }
 
+  /**
+   * Save image to specified file
+   *
+   * @param  string $file
+   * @return void
+   */
   public function save($file)
   {
     imagejpeg($this->im, $file, 70);
